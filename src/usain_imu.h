@@ -11,23 +11,27 @@
 
 class UsainIMU
 {
-public:
-    UsainIMU();
+ public:
+  UsainIMU();
 
-    float get_compass();
+  int init();
 
-    float get_pitch();
+  float get_compass();
 
-    float get_roll();
+  float get_pitch();
 
-    void register_on_collision(const Callback<void()> &callback, int threshold);
+  float get_roll();
 
-private:
-    LSM9DS1 _imu;
+  void register_on_collision(const Callback<void()> &callback);
 
-    EventQueue _ev;
+ private:
+  void collision_thread();
 
-    InterruptIn _interrupt;
+  LSM9DS1 _imu;
+
+  Thread _collision_thread;
+
+  Callback<void()> _colliion_callback;
 };
 
 #endif //ACCELEROMETER_USAIN_IMU_H
