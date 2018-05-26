@@ -21,7 +21,8 @@ int main()
 
   while (true)
   {
+    imu.get_compass();
     printf("heading: %f\n", imu.get_compass());
-    wait(0.5);
+    wait(0.1);
   }
 }

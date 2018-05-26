@@ -64,6 +64,6 @@ void UsainIMU::collision_thread()
     prev_ax = _imu.ax;
     prev_ay = _imu.ay;
 
-    wait(0.05);
+    wait(0.01);
   }
 }

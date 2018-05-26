@@ -20,16 +20,13 @@ LSM9DS1::LSM9DS1(uint8_t xgAddr, uint8_t mAddr)
       my(0),
       mz(0),
       temperature(0),
-      roll(0),
-      pitch(0),
-      heading(0),
       _i2c(D14, D15)
 {
-	magSensitivity[0] = 0.00014;
-	magSensitivity[1] = 0.00029;
-	magSensitivity[2] = 0.00043;
-	magSensitivity[3] = 0.00058;
-	
+  magSensitivity[0] = 0.00014;
+  magSensitivity[1] = 0.00029;
+  magSensitivity[2] = 0.00043;
+  magSensitivity[3] = 0.00058;
+
   settings.device.
       commInterface = IMU_MODE_I2C;
   settings.device.
@@ -124,7 +121,7 @@ LSM9DS1::LSM9DS1(uint8_t xgAddr, uint8_t mAddr)
   settings.mag.
       sampleRate = 7;
   settings.mag.
-      tempCompensationEnable = false;
+      tempCompensationEnable = true;
 // magPerformance can be any value between 0-3
 // 0 = Low power mode      2 = high performance
 // 1 = medium performance  3 = ultra-high performance
@@ -842,30 +839,28 @@ void LSM9DS1::update()
 
 float LSM9DS1::getRoll()
 {
-  return (atan2((float)ay, (float)az) * 180) / M_PI;
+  return (atan2((float) ay, (float) az) * 180) / M_PI;
 }
 
 float LSM9DS1::getPitch()
 {
-  return (atan2(((-1) * ax), sqrt((float)ay * ay + az * az)) * 180) / M_PI;
+  return (atan2(((-1) * ax), sqrt((float) ay * ay + az * az)) * 180) / M_PI;
 }
 
 float LSM9DS1::getHeading()
 {
-  if (my == 0)
-    heading = (mx < 0) ? M_PI : 0;
-  else
-    heading = atan2((mx * sin(roll) * sin(pitch) + my * cos(roll) - mz * sin(roll) * cos(pitch)),
-                    (mx * cos(pitch) + mz * sin(pitch)));
-  //heading = atan2(sens.mx, sens.my);
+  // Normalize accelerometer raw values.
+  float accXnorm = ay / sqrt(ax * ax + ay * ay + az * az);
+  float accYnorm = ay / sqrt(ax * ax + ay * ay + az * az);
 
-  //heading -= DECLINATION * M_PI / 180;
+  //Calculate pitch and roll
+  float pitch = asin(accXnorm);
+  float roll = -asin(accYnorm / cos(pitch));
 
-  if (heading > M_PI) heading -= (2 * M_PI);
-  else if (heading < (-1 * M_PI)) heading += (2 * M_PI);
-  else if (heading < 0) heading += (2 * M_PI);
+  //Calculate the new tilt compensated values
+  float magXcomp = mx * cos(pitch) + mz * sin(pitch);
+  float magYcomp = mx * sin(roll) * sin(pitch) + my * cos(roll) - mz * sin(roll) * cos(pitch);
 
-  heading *= 180.0 / M_PI;
-
-  return heading;
+  //Calculate heading
+  return 180 * atan2(magYcomp, magXcomp) / M_PI;
 }

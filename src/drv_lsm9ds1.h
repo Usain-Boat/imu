@@ -37,7 +37,6 @@ class LSM9DS1
   float gRes, aRes, mRes;
   float gBias[3], aBias[3], mBias[3];
   int16_t gBiasRaw[3], aBiasRaw[3], mBiasRaw[3];
-  float roll, pitch, heading;
 
   void constrainScales();
   void initGyro();
